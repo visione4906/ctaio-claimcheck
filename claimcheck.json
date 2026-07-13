@@ -1,0 +1,82 @@
+[
+  {
+    "verdict": "UNVERIFIABLE",
+    "evidence": [
+      "C:\\dev\\horror_shorts\\tests\\test_db.py:6",
+      "C:\\dev\\horror_shorts\\tests\\test_db.py:11",
+      "C:\\dev\\horror_shorts\\tests\\test_panel_gen.py:17",
+      "C:\\dev\\horror_shorts\\docs\\superpowers\\specs\\2026-05-04-vision-kings-pivot-design.md:31"
+    ],
+    "reason": "Evidence shows tests constructing a `jobs.sqlite` file with a `jobs` table and a `JobState` enum plus a design doc mentioning a SQLite DB, but no line from the pipeline's own source (only tests and docs) is present to show the pipeline itself reads or writes job state there.",
+    "honest_rewrite": "Tests exercise a SQLite database (`jobs.sqlite`) containing a `jobs` table and a `JobState`/`transition` API (tests/test_db.py:3-14), and a design doc refers to the project's SQLite DB (docs/superpowers/specs/2026-05-04-vision-kings-pivot-design.md:31); the pipeline's own use of it is not shown in this evidence.",
+    "claim": "The pipeline stores job state in a SQLite database"
+  },
+  {
+    "verdict": "TRUE",
+    "evidence": [
+      "C:\\dev\\horror_shorts\\tests\\test_db.py:23",
+      "C:\\dev\\horror_shorts\\tests\\test_db.py:26",
+      "C:\\dev\\horror_shorts\\tests\\test_yt_upload.py:51",
+      "C:\\dev\\horror_shorts\\src\\horror_shorts\\stages\\seed_bank.py:37",
+      "C:\\dev\\horror_shorts\\README.md:9"
+    ],
+    "reason": "A JobState enum with SCRIPTED and POSTED members is used with a transition() function against a jobs table state column, and README.md:9 describes the SQLite DB as a state machine, with seed_bank.py:37 enumerating the pipeline states.",
+    "honest_rewrite": null,
+    "claim": "Jobs move through a state machine with named states like scripted and posted"
+  },
+  {
+    "verdict": "UNVERIFIABLE",
+    "evidence": [
+      "C:\\dev\\horror_shorts\\src\\horror_shorts\\stages\\extract_short.py:22",
+      "C:\\dev\\horror_shorts\\tests\\test_extract_short.py:208"
+    ],
+    "reason": "The evidence supports idempotency for exactly one stage (extract_short) plus a DB migration helper, and contains nothing about the other stages, so the plural claim about \"stages\" in general is not settled either way.",
+    "honest_rewrite": "The extract_short stage is idempotent \u2014 re-running it on a parent that already has children is a no-op (src/horror_shorts/stages/extract_short.py:22, covered by tests/test_extract_short.py:208).",
+    "claim": "Stages are idempotent, so re-running a completed stage is a no-op"
+  },
+  {
+    "verdict": "OVERCLAIM",
+    "evidence": [
+      "C:\\dev\\horror_shorts\\tests\\test_yt_upload.py:30",
+      "C:\\dev\\horror_shorts\\tests\\test_assemble.py:4",
+      "C:\\dev\\horror_shorts\\tests\\test_yt_upload.py:35"
+    ],
+    "reason": "The only database evidence points to SQLite (`jobs.sqlite` at test_yt_upload.py:30, a `horror_shorts.db` module with a `jobs` table and `JobState` enum) and there is not a single line mentioning Postgres, psycopg, or a Postgres connection string.",
+    "honest_rewrite": "The pipeline stores job state in a SQLite database (`jobs.sqlite`), with a `jobs` table and a `JobState` enum tracking each job through states like `approved` and `ASSEMBLED`.",
+    "claim": "The pipeline uses a Postgres database for job state"
+  },
+  {
+    "verdict": "UNVERIFIABLE",
+    "evidence": [
+      "C:\\dev\\horror_shorts\\README.md:7",
+      "C:\\dev\\horror_shorts\\docs\\superpowers\\specs\\2026-05-04-vision-kings-pivot-design.md:95"
+    ],
+    "reason": "The only supporting lines are a README pipeline blurb and a design-spec comment mentioning ffmpeg upscaling; no assemble stage source file or actual ffmpeg invocation appears in the evidence, so the claim rests on documentation about itself rather than code.",
+    "honest_rewrite": "The README and design docs describe an FFmpeg-based assembly step, and an `assemble` module with 1920x1080 output constants exists (tests/test_assemble.py:172-175), but the evidence here does not show the FFmpeg calls themselves.",
+    "claim": "Video assembly is done with FFmpeg"
+  },
+  {
+    "verdict": "UNVERIFIABLE",
+    "evidence": [],
+    "reason": "No line in the evidence mentions a vector store, embeddings, retrieval, or RAG \u2014 the only hits are unrelated matches on words like 'includes' and 'scripts', which neither support nor refute the claim.",
+    "honest_rewrite": "The project includes a script-generation pipeline that prompts Claude from seed titles (README.md:7); no retrieval-augmented generation or vector store is evidenced.",
+    "claim": "The project includes a RAG pipeline over a vector store for script retrieval"
+  },
+  {
+    "verdict": "UNVERIFIABLE",
+    "evidence": [
+      "C:\\dev\\horror_shorts\\src\\horror_shorts\\entrypoints\\run_uploader.py:1",
+      "C:\\dev\\horror_shorts\\README.md:85"
+    ],
+    "reason": "The two relevant lines are a module docstring and a README bullet, both merely describing intent (\"uploads any 'approved' job to YouTube as private with publishAt=scheduled_for\"); no implementation line showing publishAt/status being set on an actual YouTube API insert call appears in the evidence, so the claim's mechanism is asserted only by prose the claim itself could have been written from.",
+    "honest_rewrite": "The uploader entrypoint is documented as running every 15 minutes and uploading approved jobs as private with a publishAt timestamp, letting YouTube handle publication (run_uploader.py:1, README.md:85) \u2014 the implementing code was not shown in this evidence.",
+    "claim": "Uploads to YouTube are scheduled rather than immediate"
+  },
+  {
+    "verdict": "UNVERIFIABLE",
+    "evidence": [],
+    "reason": "None of the grep hits show any retry loop, backoff, or circuit-breaker implementation around an LLM call \u2014 the matches are unrelated comments about script/title retries, an ffmpeg escaping test using a variable named 'breaker', and prompt text \u2014 so the evidence neither supports nor refutes the claim.",
+    "honest_rewrite": "Some LLM-driven stages (script eval, slop filter) retry on rejection, but there is no evidence in the searched code of exponential backoff or a circuit breaker on LLM calls.",
+    "claim": "Every LLM call is retried with exponential backoff and a circuit breaker"
+  }
+]
