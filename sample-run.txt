@@ -28,7 +28,7 @@ UNVERIFIABLE  Stages are idempotent, so re-running a completed stage is a no-op
               why: The evidence supports idempotency for exactly one stage (extract_short) plus a DB migration helper, and contains nothing about the other stages, so the plural claim about "stages" in general is not settled either way.
               ref: C:\dev\horror_shorts\src\horror_shorts\stages\extract_short.py:22
               ref: C:\dev\horror_shorts\tests\test_extract_short.py:208
-              say: The extract_short stage is idempotent — re-running it on a parent that already has children is a no-op (src/horror_shorts/stages/extract_short.py:22, covered by tests/test_extract_short.py:208).
+              say: The extract_short stage is idempotent -  re-running it on a parent that already has children is a no-op (src/horror_shorts/stages/extract_short.py:22, covered by tests/test_extract_short.py:208).
 
 OVERCLAIM     The pipeline uses a Postgres database for job state
               why: The only database evidence points to SQLite (`jobs.sqlite` at test_yt_upload.py:30, a `horror_shorts.db` module with a `jobs` table and `JobState` enum) and there is not a single line mentioning Postgres, psycopg, or a Postgres connection string.
@@ -44,17 +44,17 @@ UNVERIFIABLE  Video assembly is done with FFmpeg
               say: The README and design docs describe an FFmpeg-based assembly step, and an `assemble` module with 1920x1080 output constants exists (tests/test_assemble.py:172-175), but the evidence here does not show the FFmpeg calls themselves.
 
 UNVERIFIABLE  The project includes a RAG pipeline over a vector store for script retrieval
-              why: No line in the evidence mentions a vector store, embeddings, retrieval, or RAG — the only hits are unrelated matches on words like 'includes' and 'scripts', which neither support nor refute the claim.
+              why: No line in the evidence mentions a vector store, embeddings, retrieval, or RAG -  the only hits are unrelated matches on words like 'includes' and 'scripts', which neither support nor refute the claim.
               say: The project includes a script-generation pipeline that prompts Claude from seed titles (README.md:7); no retrieval-augmented generation or vector store is evidenced.
 
 UNVERIFIABLE  Uploads to YouTube are scheduled rather than immediate
               why: The two relevant lines are a module docstring and a README bullet, both merely describing intent ("uploads any 'approved' job to YouTube as private with publishAt=scheduled_for"); no implementation line showing publishAt/status being set on an actual YouTube API insert call appears in the evidence, so the claim's mechanism is asserted only by prose the claim itself could have been written from.
               ref: C:\dev\horror_shorts\src\horror_shorts\entrypoints\run_uploader.py:1
               ref: C:\dev\horror_shorts\README.md:85
-              say: The uploader entrypoint is documented as running every 15 minutes and uploading approved jobs as private with a publishAt timestamp, letting YouTube handle publication (run_uploader.py:1, README.md:85) — the implementing code was not shown in this evidence.
+              say: The uploader entrypoint is documented as running every 15 minutes and uploading approved jobs as private with a publishAt timestamp, letting YouTube handle publication (run_uploader.py:1, README.md:85) -  the implementing code was not shown in this evidence.
 
 UNVERIFIABLE  Every LLM call is retried with exponential backoff and a circuit breaker
-              why: None of the grep hits show any retry loop, backoff, or circuit-breaker implementation around an LLM call — the matches are unrelated comments about script/title retries, an ffmpeg escaping test using a variable named 'breaker', and prompt text — so the evidence neither supports nor refutes the claim.
+              why: None of the grep hits show any retry loop, backoff, or circuit-breaker implementation around an LLM call -  the matches are unrelated comments about script/title retries, an ffmpeg escaping test using a variable named 'breaker', and prompt text -  so the evidence neither supports nor refutes the claim.
               say: Some LLM-driven stages (script eval, slop filter) retry on rejection, but there is no evidence in the searched code of exponential backoff or a circuit breaker on LLM calls.
 
 ==============================================================================

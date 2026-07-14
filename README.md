@@ -3,13 +3,13 @@
 **Your agent wrote your README. Who checked it?**
 
 Agentic coding has a quiet failure mode. The agent ships the code, then writes the
-docs, then writes the release notes — and somewhere in there it starts describing
+docs, then writes the release notes, and somewhere in there it starts describing
 the system it *meant* to build. Nobody greps. The claim survives. It ends up in your
 README, your changelog, your pitch, your CV.
 
 `claimcheck` is the guardrail: it takes a document full of claims and a codebase, and
 makes an **independent** agent prove each claim against the source, with file:line
-citations — or refuse.
+citations, or refuse.
 
 ```bash
 python claimcheck.py --claims example/claims.md --repo ../horror-shorts-pipeline
@@ -20,7 +20,7 @@ echo $?   # non-zero if anything is an OVERCLAIM -> drop it in CI and it becomes
 
 ## Why it exists
 
-This week an independent reviewer caught five overclaims in **my own CV** — including
+This week an independent reviewer caught five overclaims in **my own CV**, including
 a line saying a product had a paying customer when that product had exactly zero. I'd
 written it. I'd read it a dozen times. It took a second agent, one that hadn't written
 it and owed it nothing, to grep the repo and say: *no.*
@@ -38,20 +38,20 @@ These are the interesting part. The code is 150 lines; the decisions are the too
 the authoring context and no sight of the other claims. Independence isn't a nice-to-have
 here, it's the entire product. An agent grading its own output is a rubber stamp.
 
-**2. Deterministic retrieval, LLM only for judgement.** `ripgrep` gathers the evidence —
+**2. Deterministic retrieval, LLM only for judgement.** `ripgrep` gathers the evidence:
 fast, exhaustive, free, reproducible. The model never chooses what it gets to look at;
 it only adjudicates claim-vs-evidence. Keeping the LLM on the one job it's actually
 good at is the difference between a pipeline and a vibe.
 
-**3. Fail closed.** No file:line evidence → the verdict **cannot** be `TRUE`. If the
+**3. Fail closed.** No file:line evidence -> the verdict **cannot** be `TRUE`. If the
 model returns `TRUE` with an empty evidence array, `claimcheck` overrides it to
 `UNVERIFIABLE`. The model does not get the last word on that one. A false `TRUE` is
-the only failure that actually costs you anything — it's the one that survives into
+the only failure that actually costs you anything. It is the one that survives into
 production prose.
 
 **4. Zero credentials.** It shells out to the already-authenticated **Claude Code CLI**
 instead of taking an `ANTHROPIC_API_KEY`. Nothing to configure, nothing to leak, no key
-in a `.env` waiting to be committed. This started as a constraint — no local API key —
+in a `.env` waiting to be committed. This started as a constraint (no local API key)
 and ended up the better architecture, and the one that matches how this audience already
 works.
 
@@ -87,7 +87,7 @@ TRUE          Jobs move through a state machine with named states like scripted 
 
 Full output: [`sample-run.txt`](sample-run.txt).
 
-**Read that scoreboard carefully — it's the most honest thing here.** Only one claim
+**Read that scoreboard carefully. It is the most honest thing here.** Only one claim
 came back `TRUE`. Several claims that *are* actually true (SQLite, FFmpeg) came back
 `UNVERIFIABLE`, because the grep evidence showed them in tests and docs but not in the
 pipeline's own source. That's not a bug I'd paper over. A tool like this is only worth
@@ -100,7 +100,7 @@ The day it starts flattering you is the day it's useless.
 
 - **Retrieval is lexical.** ripgrep on content-words. A claim phrased in words that
   don't appear in the code will come back `UNVERIFIABLE` even if it's true. Fixing this
-  properly means embeddings, which means an API key, which kills decision #4 — so it
+  properly means embeddings, which means an API key, which kills decision #4, so it
   stays lexical, and it stays conservative. That trade is deliberate.
 - **It is conservative by construction.** Expect `UNVERIFIABLE` a lot. That's the point.
 - **One process per claim.** Fine for a README. Slow for a book.
